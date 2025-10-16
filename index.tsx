@@ -18,8 +18,8 @@ export class GdmLiveAudio extends LitElement {
   @state() error = '';
   @state() language = 'en-US';
 
-  private client: GoogleGenAI;
-  private sessionPromise: Promise<Session>;
+  private client: GoogleGenAI | null = null;
+  private sessionPromise: Promise<Session> | null = null;
   // Fix for line 23 & 25: Cast window to any to access webkitAudioContext for older browser compatibility.
   private inputAudioContext = new (window.AudioContext ||
     (window as any).webkitAudioContext)({sampleRate: 16000});
@@ -197,6 +197,12 @@ export class GdmLiveAudio extends LitElement {
 
   constructor() {
     super();
+    if (!process.env.API_KEY) {
+      this.error =
+        'API_KEY is not configured. Please set the API_KEY environment variable in your deployment settings.';
+      this.status = 'Configuration Error';
+      return;
+    }
     this.client = new GoogleGenAI({
       apiKey: process.env.API_KEY,
     });
@@ -210,6 +216,11 @@ export class GdmLiveAudio extends LitElement {
   }
 
   private initSession(): Promise<Session> {
+    if (!this.client) {
+      const errorMessage = 'Gemini client is not initialized.';
+      this.updateError(errorMessage);
+      return Promise.reject(new Error(errorMessage));
+    }
     const model = 'gemini-2.5-flash-native-audio-preview-09-2025';
 
     return this.client.live.connect({
@@ -282,7 +293,7 @@ export class GdmLiveAudio extends LitElement {
   }
 
   private async startRecording() {
-    if (this.isRecording) {
+    if (this.isRecording || !this.sessionPromise) {
       return;
     }
 
@@ -316,7 +327,7 @@ export class GdmLiveAudio extends LitElement {
         const inputBuffer = audioProcessingEvent.inputBuffer;
         const pcmData = inputBuffer.getChannelData(0);
 
-        this.sessionPromise.then((session) => {
+        this.sessionPromise!.then((session) => {
           session.sendRealtimeInput({media: createBlob(pcmData)});
         });
       };
@@ -358,6 +369,12 @@ export class GdmLiveAudio extends LitElement {
   }
   
   private toggleRecording() {
+    if (!this.client) {
+      this.updateError(
+        'Cannot start recording. API Key is not configured correctly.',
+      );
+      return;
+    }
     if (this.isRecording) {
       this.stopRecording();
     } else {
@@ -366,12 +383,24 @@ export class GdmLiveAudio extends LitElement {
   }
 
   private reset() {
+    if (!this.sessionPromise) {
+      this.updateStatus('Cannot reset. Session not initialized.');
+      return;
+    }
     this.sessionPromise.then((session) => session.close());
     this.sessionPromise = this.initSession();
     this.updateStatus('Session cleared.');
   }
 
   private handleLanguageChange(e: Event) {
+    if (!this.client) {
+      this.updateError(
+        'Cannot change language. API Key is not configured correctly.',
+      );
+      const select = e.target as HTMLSelectElement;
+      select.value = this.language;
+      return;
+    }
     this.language = (e.target as HTMLSelectElement).value;
     this.reset();
   }
@@ -394,6 +423,8 @@ export class GdmLiveAudio extends LitElement {
         <polyline points="23 4 23 10 17 10"></polyline>
         <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
     </svg>`;
+    
+    const isConfigError = !this.client;
 
     return html`
       <div>
@@ -402,21 +433,22 @@ export class GdmLiveAudio extends LitElement {
           <div class="controls">
             <select
               @change=${this.handleLanguageChange}
-              ?disabled=${this.isRecording}>
+              ?disabled=${this.isRecording || isConfigError}>
               <option value="en-US">English</option>
               <option value="ar-SA">العربية</option>
             </select>
             <button
               id="recordButton"
               class=${this.isRecording ? 'recording' : 'idle'}
-              @click=${this.toggleRecording}>
+              @click=${this.toggleRecording}
+              ?disabled=${isConfigError}>
               ${this.isRecording ? stopIcon : recordIcon}
             </button>
             <button
               id="resetButton"
               class="side-button"
               @click=${this.reset}
-              ?disabled=${this.isRecording}>
+              ?disabled=${this.isRecording || isConfigError}>
               ${resetIcon}
             </button>
           </div>

@@ -113,12 +113,19 @@ export class GdmLiveAudioVisuals3D extends LitElement {
 
     const geometry = new THREE.IcosahedronGeometry(1, 10);
 
-    new EXRLoader().load('piz_compressed.exr', (texture: THREE.Texture) => {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
-      sphereMaterial.envMap = exrCubeRenderTarget.texture;
-      sphere.visible = true;
-    });
+    new EXRLoader().load(
+      '/piz_compressed.exr',
+      (texture: THREE.Texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
+        sphereMaterial.envMap = exrCubeRenderTarget.texture;
+        sphere.visible = true;
+      },
+      undefined,
+      (error) => {
+        console.error('An error occurred loading the EXR file:', error);
+      },
+    );
 
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
