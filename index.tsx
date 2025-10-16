@@ -331,7 +331,12 @@ export class GdmLiveAudio extends LitElement {
       };
 
       this.sourceNode.connect(this.scriptProcessorNode);
-      this.scriptProcessorNode.connect(this.inputAudioContext.destination);
+      // To prevent audio feedback, we connect the script processor to a muted
+      // GainNode. This is required for `onaudioprocess` to fire.
+      const muteNode = this.inputAudioContext.createGain();
+      muteNode.gain.value = 0;
+      this.scriptProcessorNode.connect(muteNode);
+      muteNode.connect(this.inputAudioContext.destination);
 
       this.isRecording = true;
       this.updateStatus('🔴 Recording... Capturing PCM chunks.');
