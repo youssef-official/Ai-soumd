@@ -119,6 +119,7 @@ export class GdmLiveAudioVisuals3D extends LitElement {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
         sphereMaterial.envMap = exrCubeRenderTarget.texture;
+        sphere.visible = true;
       },
       undefined,
       (error) => {
@@ -149,7 +150,7 @@ export class GdmLiveAudioVisuals3D extends LitElement {
 
     const sphere = new THREE.Mesh(geometry, sphereMaterial);
     scene.add(sphere);
-    sphere.visible = true;
+    sphere.visible = false;
 
     this.sphere = sphere;
 
