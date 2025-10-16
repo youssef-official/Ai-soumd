@@ -1,5 +1,21 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevent scrollbars */
+  background-color: #100c14; /* Match 3D scene background */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
 body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+gdm-live-audio {
+  width: 100%;
+  height: 100%;
+  display: block; /* Ensure the component takes up space */
 }

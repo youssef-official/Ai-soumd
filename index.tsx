@@ -9,6 +9,7 @@ import {LitElement, css, html} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {createBlob, decode, decodeAudioData} from './utils';
 import './visual-3d';
+import './index.css';
 
 @customElement('gdm-live-audio')
 export class GdmLiveAudio extends LitElement {
