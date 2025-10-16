@@ -297,9 +297,22 @@ export class GdmLiveAudio extends LitElement {
       return;
     }
 
-    this.updateStatus('Requesting microphone access...');
-
     try {
+      if (navigator.permissions) {
+        this.updateStatus('Checking microphone permissions...');
+        const permissionStatus = await navigator.permissions.query({
+          name: 'microphone' as PermissionName,
+        });
+        if (permissionStatus.state === 'denied') {
+          this.updateError(
+            'Microphone access is denied. Please enable it in your browser settings and try again.',
+          );
+          return;
+        }
+      }
+
+      this.updateStatus('Requesting microphone access...');
+
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: false,
@@ -342,17 +355,23 @@ export class GdmLiveAudio extends LitElement {
       this.updateStatus('🔴 Recording... Capturing PCM chunks.');
     } catch (err) {
       console.error('Error starting recording:', err);
-      this.updateStatus(`Error: ${(err as Error).message}`);
-      this.stopRecording();
+      let errorMessage = `Error: ${(err as Error).message}`;
+      if ((err as Error).name === 'NotAllowedError') {
+        errorMessage =
+          'Microphone access was denied. Please enable microphone permissions in your browser settings.';
+      }
+      this.updateError(errorMessage);
+      this.stopRecording(/* fromError= */ true);
     }
   }
 
-  private stopRecording() {
+  private stopRecording(fromError = false) {
     if (!this.isRecording && !this.mediaStream && !this.inputAudioContext)
       return;
 
-    this.updateStatus('Stopping recording...');
-
+    if (!fromError) {
+      this.updateStatus('Stopping recording...');
+    }
     this.isRecording = false;
 
     if (this.scriptProcessorNode && this.sourceNode && this.inputAudioContext) {
@@ -368,9 +387,11 @@ export class GdmLiveAudio extends LitElement {
       this.mediaStream = null;
     }
 
-    this.updateStatus('Recording stopped. Click Start to begin again.');
+    if (!fromError) {
+      this.updateStatus('Recording stopped. Click Start to begin again.');
+    }
   }
-  
+
   private toggleRecording() {
     // This is the first user interaction. Resume audio contexts if they are suspended.
     // This is required by browsers' autoplay policies to enable audio.
