@@ -10,10 +10,10 @@ import {Analyser} from './analyser';
 
 @customElement('gdm-live-audio-visuals')
 export class GdmLiveAudioVisuals extends LitElement {
-  private inputAnalyser: Analyser;
-  private outputAnalyser: Analyser;
+  private inputAnalyser!: Analyser;
+  private outputAnalyser!: Analyser;
 
-  private _outputNode: AudioNode;
+  private _outputNode!: AudioNode;
 
   @property()
   set outputNode(node: AudioNode) {
@@ -25,7 +25,7 @@ export class GdmLiveAudioVisuals extends LitElement {
     return this._outputNode;
   }
 
-  private _inputNode: AudioNode;
+  private _inputNode!: AudioNode;
 
   @property()
   set inputNode(node: AudioNode) {
@@ -37,8 +37,8 @@ export class GdmLiveAudioVisuals extends LitElement {
     return this._inputNode;
   }
 
-  private canvas: HTMLCanvasElement;
-  private canvasCtx: CanvasRenderingContext2D;
+  private canvas!: HTMLCanvasElement;
+  private canvasCtx!: CanvasRenderingContext2D;
 
   static styles = css`
     canvas {
@@ -101,15 +101,19 @@ export class GdmLiveAudioVisuals extends LitElement {
     requestAnimationFrame(() => this.visualize());
   }
 
-  private firstUpdated() {
+  protected firstUpdated() {
     // Fix for line 107: Replaced `this.shadowRoot` with `this.renderRoot` to correctly access the component's shadow DOM.
     this.canvas = this.renderRoot.querySelector('canvas')!;
     this.canvas.width = 400;
     this.canvas.height = 400;
-    this.canvasCtx = this.canvas.getContext('2d');
+    const ctx = this.canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not get 2D context from canvas');
+    }
+    this.canvasCtx = ctx;
   }
 
-  private render() {
+  protected render() {
     return html`<canvas></canvas>`;
   }
 }

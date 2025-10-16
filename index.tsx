@@ -27,9 +27,9 @@ export class GdmLiveAudio extends LitElement {
   @state() inputNode = this.inputAudioContext.createGain();
   @state() outputNode = this.outputAudioContext.createGain();
   private nextStartTime = 0;
-  private mediaStream: MediaStream;
-  private sourceNode: AudioBufferSourceNode;
-  private scriptProcessorNode: ScriptProcessorNode;
+  private mediaStream: MediaStream | null = null;
+  private sourceNode: MediaStreamAudioSourceNode | null = null;
+  private scriptProcessorNode: ScriptProcessorNode | null = null;
   private sources = new Set<AudioBufferSourceNode>();
 
   static styles = css`
@@ -219,7 +219,7 @@ export class GdmLiveAudio extends LitElement {
         },
         onmessage: async (message: LiveServerMessage) => {
           const audio =
-            message.serverContent?.modelTurn?.parts[0]?.inlineData;
+            message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
 
           if (audio) {
             this.nextStartTime = Math.max(
@@ -327,7 +327,7 @@ export class GdmLiveAudio extends LitElement {
       this.updateStatus('🔴 Recording... Capturing PCM chunks.');
     } catch (err) {
       console.error('Error starting recording:', err);
-      this.updateStatus(`Error: ${err.message}`);
+      this.updateStatus(`Error: ${(err as Error).message}`);
       this.stopRecording();
     }
   }
