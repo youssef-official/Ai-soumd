@@ -102,9 +102,8 @@ export class GdmLiveAudioVisuals extends LitElement {
   }
 
   private firstUpdated() {
-    // Fix for line 105: Use this.renderRoot which is the recommended way to access the component's root in Lit.
-    // Fix for line 106: Replaced `this.renderRoot` with `this.shadowRoot!` to correctly access the component's shadow DOM and resolve the TypeScript error.
-    this.canvas = this.shadowRoot!.querySelector('canvas')!;
+    // Fix for line 107: Replaced `this.shadowRoot` with `this.renderRoot` to correctly access the component's shadow DOM.
+    this.canvas = this.renderRoot.querySelector('canvas')!;
     this.canvas.width = 400;
     this.canvas.height = 400;
     this.canvasCtx = this.canvas.getContext('2d');

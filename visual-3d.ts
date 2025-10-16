@@ -12,12 +12,12 @@ import {customElement, property} from 'lit/decorators.js';
 import {Analyser} from './analyser';
 
 import * as THREE from 'three';
-import {EXRLoader} from 'three/addons/loaders/EXRLoader.js';
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
-import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
+import {EXRLoader} from 'three/examples/jsm/loaders/EXRLoader.js';
+import {EffectComposer} from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/examples/jsm/postprocessing/RenderPass.js';
+import {ShaderPass} from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import {UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import {FXAAShader} from 'three/examples/jsm/shaders/FXAAShader.js';
 import {fs as backdropFS, vs as backdropVS} from './backdrop-shader';
 import {vs as sphereVS} from './sphere-shader';
 
@@ -242,9 +242,8 @@ export class GdmLiveAudioVisuals3D extends LitElement {
   }
 
   protected firstUpdated() {
-    // Fix for line 245: Use this.renderRoot which is the recommended way to access the component's root in Lit.
-    // Fix for line 246: Replaced `this.renderRoot` with `this.shadowRoot!` to correctly access the component's shadow DOM and resolve the TypeScript error.
-    this.canvas = this.shadowRoot!.querySelector('canvas') as HTMLCanvasElement;
+    // Fix for line 247: Replaced `this.shadowRoot` with `this.renderRoot` to correctly access the component's shadow DOM.
+    this.canvas = this.renderRoot.querySelector('canvas') as HTMLCanvasElement;
     this.init();
   }
 
