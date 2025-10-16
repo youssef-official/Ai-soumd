@@ -331,6 +331,7 @@ export class GdmLiveAudio extends LitElement {
 
   private updateError(msg: string) {
     this.error = msg;
+    this.status = '';
   }
 
   private async startRecording() {
@@ -388,7 +389,7 @@ export class GdmLiveAudio extends LitElement {
         errorMessage =
           'No microphone found. Please connect a microphone and try again.';
       }
-      this.updateStatus(errorMessage);
+      this.updateError(errorMessage);
       this.stopRecording(true);
     }
   }
@@ -500,7 +501,7 @@ export class GdmLiveAudio extends LitElement {
         .inputNode=${this.inputNode}
         .outputNode=${this.outputNode}></visual-3d>
       <div class="ui-container">
-        <div id="status">${this.status}</div>
+        <div id="status">${this.error || this.status}</div>
         <div class="controls">
           <select
             @change=${this.handleLanguageChange}
