@@ -35,12 +35,14 @@ export class GdmLiveAudio extends LitElement {
 
   static styles = css`
     :host {
-      --accent-color: #c80000;
-      --background-color: rgba(41, 41, 51, 0.5);
-      --background-hover: rgba(55, 55, 65, 0.7);
-      --border-color: rgba(255, 255, 255, 0.1);
-      --text-color: rgba(255, 255, 255, 0.9);
+      --accent-color: #00ffff; /* Cyan */
+      --accent-color-transparent: rgba(0, 255, 255, 0.7);
+      --background-color: rgba(10, 20, 30, 0.6);
+      --background-hover: rgba(20, 40, 60, 0.8);
+      --border-color: rgba(0, 255, 255, 0.2);
+      --text-color: #e0f0ff;
       --icon-color: #ffffff;
+      --glow-color: rgba(0, 255, 255, 0.5);
     }
 
     .ui-container {
@@ -58,14 +60,16 @@ export class GdmLiveAudio extends LitElement {
 
     #status {
       color: var(--text-color);
-      background: rgba(0, 0, 0, 0.3);
+      background: transparent;
       padding: 0.5rem 1rem;
       border-radius: 1rem;
-      font-size: 0.9rem;
+      font-size: 1rem;
+      font-family: 'Consolas', 'Monaco', monospace;
       transition: opacity 0.3s ease;
       opacity: 1;
       max-width: 90%;
       text-align: center;
+      text-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--accent-color);
     }
 
     #status:empty {
@@ -75,24 +79,26 @@ export class GdmLiveAudio extends LitElement {
     .controls {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.5rem;
       background: var(--background-color);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 0.75rem;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      padding: 0.5rem;
       border-radius: 50px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      box-shadow: 0 0 15px 2px var(--glow-color),
+        inset 0 0 5px rgba(0, 255, 255, 0.1);
     }
 
     button {
+      position: relative;
       outline: none;
-      border: none;
+      border: 1px solid transparent;
       color: var(--icon-color);
       border-radius: 50%;
       background: transparent;
-      width: 48px;
-      height: 48px;
+      width: 52px;
+      height: 52px;
       cursor: pointer;
       font-size: 24px;
       padding: 0;
@@ -105,24 +111,31 @@ export class GdmLiveAudio extends LitElement {
 
     button:hover {
       background: var(--background-hover);
-      transform: scale(1.1);
+      border-color: var(--border-color);
+      transform: scale(1.05);
+      box-shadow: 0 0 10px var(--glow-color);
     }
 
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
       transform: none;
       background: transparent;
+      box-shadow: none;
+      border-color: transparent;
     }
-    
+
     button:disabled:hover {
       background: transparent;
+      border-color: transparent;
     }
 
     #recordButton {
-      width: 64px;
-      height: 64px;
-      background: var(--accent-color);
+      width: 72px;
+      height: 72px;
+      background-color: var(--accent-color);
+      border: none;
+      box-shadow: 0 0 20px var(--glow-color);
     }
 
     #recordButton.idle {
@@ -130,13 +143,19 @@ export class GdmLiveAudio extends LitElement {
     }
 
     #recordButton.recording {
-      background: #1f2937;
+      background: transparent;
       border: 2px solid var(--accent-color);
+      animation: sonar-ring 1.5s infinite ease-out;
     }
-    
+
     #recordButton svg {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
+      transition: transform 0.3s ease;
+    }
+
+    #recordButton.recording svg {
+      transform: scale(0.8);
     }
 
     .side-button svg {
@@ -146,12 +165,12 @@ export class GdmLiveAudio extends LitElement {
 
     select {
       outline: none;
-      border: none;
+      border: 1px solid var(--border-color);
       color: var(--text-color);
       border-radius: 24px;
       background: transparent;
-      padding: 0 1.25rem;
-      height: 48px;
+      padding: 0 1.5rem 0 1rem;
+      height: 52px;
       cursor: pointer;
       font-size: 1rem;
       -webkit-appearance: none;
@@ -159,38 +178,60 @@ export class GdmLiveAudio extends LitElement {
       appearance: none;
       text-align: center;
       transition: all 0.2s ease-in-out;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2300ffff' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
     }
-    
+
     select:hover {
-      background: var(--background-hover);
+      background-color: var(--background-hover);
+      border-color: var(--accent-color);
+      box-shadow: 0 0 10px var(--glow-color);
     }
 
     select:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
     select:disabled:hover {
       background: transparent;
+      border-color: var(--border-color);
     }
 
     option {
-      background: #1f2937;
-      color: white;
+      background: #0a141e; /* Dark blue background for options */
+      color: var(--text-color);
     }
 
     @keyframes pulse {
       0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(200, 0, 0, 0.7);
+        transform: scale(0.98);
+        box-shadow: 0 0 0 0 var(--accent-color-transparent);
       }
       70% {
         transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(200, 0, 0, 0);
+        box-shadow: 0 0 10px 15px rgba(0, 255, 255, 0);
       }
       100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(200, 0, 0, 0);
+        transform: scale(0.98);
+        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
+      }
+    }
+
+    @keyframes sonar-ring {
+      0% {
+        box-shadow: 0 0 8px 2px var(--accent-color-transparent),
+          inset 0 0 5px 1px var(--accent-color-transparent);
+      }
+      50% {
+        box-shadow: 0 0 12px 4px var(--accent-color-transparent),
+          inset 0 0 8px 2px var(--accent-color-transparent);
+      }
+      100% {
+        box-shadow: 0 0 8px 2px var(--accent-color-transparent),
+          inset 0 0 5px 1px var(--accent-color-transparent);
       }
     }
   `;
@@ -297,7 +338,7 @@ export class GdmLiveAudio extends LitElement {
       return;
     }
 
-    this.inputAudioContext.resume();
+    await this.inputAudioContext.resume();
 
     this.updateStatus('Requesting microphone access...');
 
@@ -339,16 +380,26 @@ export class GdmLiveAudio extends LitElement {
       this.updateStatus('🔴 Recording... Capturing PCM chunks.');
     } catch (err) {
       console.error('Error starting recording:', err);
-      this.updateStatus(`Error: ${(err as Error).message}`);
-      this.stopRecording();
+      let errorMessage = `Error: ${(err as Error).message}`;
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        errorMessage =
+          'Microphone permission denied. Please enable it in your browser settings and try again.';
+      } else if (err instanceof DOMException && err.name === 'NotFoundError') {
+        errorMessage =
+          'No microphone found. Please connect a microphone and try again.';
+      }
+      this.updateStatus(errorMessage);
+      this.stopRecording(true);
     }
   }
 
-  private stopRecording() {
+  private stopRecording(isError = false) {
     if (!this.isRecording && !this.mediaStream && !this.inputAudioContext)
       return;
 
-    this.updateStatus('Stopping recording...');
+    if (!isError) {
+      this.updateStatus('Stopping recording...');
+    }
 
     this.isRecording = false;
 
@@ -365,9 +416,11 @@ export class GdmLiveAudio extends LitElement {
       this.mediaStream = null;
     }
 
-    this.updateStatus('Recording stopped. Click Start to begin again.');
+    if (!isError) {
+      this.updateStatus('Recording stopped. Click Start to begin again.');
+    }
   }
-  
+
   private toggleRecording() {
     if (!this.client) {
       this.updateError(
@@ -407,57 +460,88 @@ export class GdmLiveAudio extends LitElement {
 
   render() {
     const recordIcon = html`
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round">
         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2h2v2a5 5 0 0 0 10 0v-2z"></path>
-        <line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line>
-      </svg>`;
-
-    const stopIcon = html`
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="6" y="6" width="12" height="12"></rect>
-      </svg>`;
-    
-    const resetIcon = html`
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"></polyline>
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-    </svg>`;
-    
-    const isConfigError = !this.client;
-
-    return html`
-      <div>
-        <div class="ui-container">
-          <div id="status">${this.error || this.status}</div>
-          <div class="controls">
-            <select
-              @change=${this.handleLanguageChange}
-              ?disabled=${this.isRecording || isConfigError}>
-              <option value="en-US">English</option>
-              <option value="ar-SA">العربية</option>
-            </select>
-            <button
-              id="recordButton"
-              class=${this.isRecording ? 'recording' : 'idle'}
-              @click=${this.toggleRecording}
-              ?disabled=${isConfigError}>
-              ${this.isRecording ? stopIcon : recordIcon}
-            </button>
-            <button
-              id="resetButton"
-              class="side-button"
-              @click=${this.reset}
-              ?disabled=${this.isRecording || isConfigError}>
-              ${resetIcon}
-            </button>
-          </div>
-        </div>
-
-        <gdm-live-audio-visuals-3d
-          .inputNode=${this.inputNode}
-          .outputNode=${this.outputNode}></gdm-live-audio-visuals-3d>
-      </div>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        <line x1="12" y1="19" x2="12" y2="23"></line>
+        <line x1="8" y1="23" x2="16" y2="23"></line>
+      </svg>
     `;
+    const stopIcon = html`
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        stroke-width="1.5">
+        <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+      </svg>
+    `;
+
+    const resetIcon = html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round">
+      <path d="M20 10c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8v-4" />
+      <path d="m14 14-4 4 4 4" />
+    </svg>`;
+
+    return html`<visual-3d
+        .inputNode=${this.inputNode}
+        .outputNode=${this.outputNode}></visual-3d>
+      <div class="ui-container">
+        <div id="status">${this.status}</div>
+        <div class="controls">
+          <select
+            @change=${this.handleLanguageChange}
+            ?disabled=${this.isRecording ||
+            (!!this.error && !this.isRecording)}>
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="fr-FR">French</option>
+            <option value="es-ES">Spanish</option>
+            <option value="de-DE">German</option>
+            <option value="it-IT">Italian</option>
+            <option value="ja-JP">Japanese</option>
+            <option value="ko-KR">Korean</option>
+            <option value="pt-BR">Portuguese</option>
+            <option value="ru-RU">Russian</option>
+            <option value="zh-CN">Chinese (Mandarin)</option>
+            <option value="ar-SA">Arabic</option>
+          </select>
+
+          <button
+            id="recordButton"
+            class=${this.isRecording ? 'recording' : 'idle'}
+            @click=${this.toggleRecording}
+            ?disabled=${!!this.error && !this.isRecording}>
+            ${this.isRecording ? stopIcon : recordIcon}
+          </button>
+
+          <button
+            class="side-button"
+            @click=${this.reset}
+            ?disabled=${this.isRecording ||
+            (!!this.error && !this.isRecording)}>
+            ${resetIcon}
+          </button>
+        </div>
+      </div>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'gdm-live-audio': GdmLiveAudio;
   }
 }
